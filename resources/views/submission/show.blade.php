@@ -485,7 +485,7 @@
                             @if($paper->fullpaper_status === 'Submitted')
                                 <span
                                     style="font-size: 0.85rem; background: #fff8e1; color: #f57f17; padding: 6px 12px; border-radius: 50px; font-weight: 600;">
-                                    Replaceable
+                                    Under Review
                                 </span>
                             @endif
                         </div>
@@ -496,7 +496,11 @@
                     <p style="color:#888; font-style: italic; font-size: 0.9rem;">
                         Full paper has been decided by the committee and can no longer be modified.
                     </p>
-                @else
+                @elseif(!empty($paper->fullpaper_status) && $paper->fullpaper_status === 'Withdrawn')
+                    <p style="color:#c62828; font-style: italic; font-size: 0.9rem;">
+                        This full paper has been withdrawn.
+                    </p>
+                @elseif(empty($paper->fullpaper_status))
                     @if($canManageSubmission)
                         <form method="POST" action="{{ route('submissions.fullpaper.upload', $paper->paper_id) }}"
                             enctype="multipart/form-data">
@@ -505,18 +509,36 @@
                                 <label class="form-label">Upload Paper (PDF/DOC/DOCX)</label>
                                 <input type="file" name="fullpaper_file" class="form-input" required>
                                 <p style="font-size: 0.8rem; color: #888; margin-top: 8px;">
-                                    Max file size: 10MB. Replacing the file will overwrite the previous submission.
+                                    Max file size: 10MB.
                                 </p>
                             </div>
-                            <button type="submit" class="btn-primary"
-                                onclick="return confirm('Submit full paper now? This will replace the previous file if one exists.');">
-                                {{ empty($paper->fullpaper_status) ? 'Submit Full Paper' : 'Reload/Replace Full Paper' }}
+                            <button type="submit" class="btn-primary" onclick="return confirm('Submit full paper now?');">
+                                Submit Full Paper
                             </button>
                         </form>
                     @endif
                 @endif
             @endif
         </div>
+
+        @if($canManageSubmission && !empty($paper->fullpaper_status) && $paper->fullpaper_status === 'Submitted')
+            <div class="card" style="border: 1px solid #ffebee;">
+                <h2 class="section-title" style="color: #c62828; margin-bottom: 20px;">Withdraw Full Paper</h2>
+                <p style="color: #666; margin-bottom: 24px; font-size: 0.9rem;">
+                    If you wish to withdraw your full paper submission, please provide a reason below.
+                    This can only be done before the committee has made a decision.
+                </p>
+                <form method="POST" action="{{ route('submissions.fullpaper.withdraw', $paper->paper_id) }}"
+                    onsubmit="return confirm('Are you sure you want to withdraw this full paper? This action cannot be undone.');">
+                    @csrf
+                    <div class="form-group">
+                        <textarea name="reason" class="form-textarea" style="height:100px" required
+                            placeholder="Reason for withdrawal..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-outline-danger">Withdraw Full Paper</button>
+                </form>
+            </div>
+        @endif
 
         {{-- Presenter Section --}}
         @if($paper->fullpaper_status === 'Accepted')

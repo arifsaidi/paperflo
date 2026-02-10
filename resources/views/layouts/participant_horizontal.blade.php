@@ -494,7 +494,7 @@
                 <div class="notif-item ${n.status}" onclick="handleNotifClick(${n.notification_id}, '${n.link || ''}', '${n.status}')">
                     <div class="notif-dot ${n.status}"></div>
                     <div class="notif-content">
-                        <div class="notif-text">${n.message}</div>
+                        <div class="notif-text">${n.content}</div>
                         <div class="notif-time">${timeAgo(n.created_at)}</div>
                     </div>
                 </div>

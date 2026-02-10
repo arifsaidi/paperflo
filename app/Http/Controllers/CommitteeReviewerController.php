@@ -99,7 +99,7 @@ class CommitteeReviewerController extends Controller
             'area' => 'nullable|string|max:255',
             'institution' => 'nullable|string|max:255',
             'temp_password' => 'required|string|min:6|max:50',
-            'reviewer_type' => 'required|in:Regular,Primary,Secondary',
+            'reviewer_type' => 'required|in:Internal,External',
         ]);
 
         $reviewerId = null;

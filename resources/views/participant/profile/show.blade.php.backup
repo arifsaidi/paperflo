@@ -1,0 +1,265 @@
+@extends('layouts.participant')
+
+@section('title', 'My Account')
+
+@section('styles')
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a2e;
+        }
+
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #4E342E;
+            border-bottom: 2px solid #f1f3f5;
+            padding-bottom: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4E342E;
+            box-shadow: 0 0 0 3px rgba(78, 52, 46, 0.1);
+        }
+
+        .form-control:disabled {
+            background-color: #f8f9fa;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-save {
+            background: #FF5722;
+            color: #fff;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            background: #e64a19;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(255, 87, 34, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f3f5;
+        }
+
+        .password-link {
+            text-decoration: none;
+            color: #2962ff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .password-link:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+@endsection
+
+@section('content')
+    <div class="container">
+        <div class="page-header">
+            <h1>My Account</h1>
+        </div>
+
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-error">
+                <ul style="margin:0; padding-left:20px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="profile-card">
+            <form id="profileForm" method="POST" action="{{ route('participant.profile.update') }}">
+                @csrf
+                @method('PUT')
+
+                <h2 class="section-title">Personal Information</h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $participant->name) }}"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address (Read-only)</label>
+                        <input type="email" class="form-control" value="{{ $participant->email }}" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone_num" class="form-control"
+                            value="{{ old('phone_num', $participant->phone_num) }}" placeholder="e.g. +60123456789">
+                    </div>
+
+                    <div class="form-group">
+                        <!-- Spacer for grid alignment -->
+                    </div>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 20px;">Academic Details</h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Institution</label>
+                        <input type="text" name="institution" class="form-control"
+                            value="{{ old('institution', $participant->institution) }}" placeholder="e.g. University Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Faculty</label>
+                        <input type="text" name="faculty" class="form-control"
+                            value="{{ old('faculty', $participant->faculty) }}" placeholder="e.g. Faculty of Engineering">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <input type="text" name="department" class="form-control"
+                            value="{{ old('department', $participant->department) }}" placeholder="e.g. Computer Science">
+                    </div>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 20px;">Contact Address</h2>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Full Address</label>
+                    <textarea name="address" class="form-control"
+                        placeholder="Enter your mailing address">{{ old('address', $participant->address) }}</textarea>
+                </div>
+
+            </form>
+
+            <div class="actions">
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <a href="{{ route('participant.profile.password.edit') }}" class="password-link">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path
+                                d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+                        </svg>
+                        Change Password
+                    </a>
+
+                    <button type="submit" form="profileForm" class="btn-save">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

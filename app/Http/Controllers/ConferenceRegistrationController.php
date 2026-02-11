@@ -101,11 +101,30 @@ class ConferenceRegistrationController extends Controller
             abort(403, 'You are not registered for this conference.');
         }
 
+        // Listener payment check
+        $listenerPayment = null;
+        if ($registration && $registration->registration_type === 'listener') {
+            $listenerPayment = DB::table('listener_payment')
+                ->where('registration_id', $registration->registration_id)
+                ->first();
+        }
+
+        // Get fee for this registration category
+        $registrationFee = null;
+        if ($registration) {
+            $registrationFee = DB::table('conference_fees')
+                ->where('conference_id', $conference_id)
+                ->where('name', $registration->registration_category)
+                ->first();
+        }
+
         return view('participant.my_registration', compact(
             'registration',
             'conference',
             'isInvitedPresenter',
-            'presenterRegistrationStatus'
+            'presenterRegistrationStatus',
+            'listenerPayment',
+            'registrationFee'
         ));
     }
 
@@ -181,4 +200,48 @@ class ConferenceRegistrationController extends Controller
 
 
 
+    public function payListener(Request $request, $conference_id)
+    {
+        $participantId = session('user_id');
+
+        $registration = DB::table('conference_registration')
+            ->where('conference_id', $conference_id)
+            ->where('participant_id', $participantId)
+            ->where('registration_type', 'listener')
+            ->first();
+
+        if (!$registration) {
+            abort(403, 'You are not registered as a listener for this conference.');
+        }
+
+        // Prevent double payment
+        $existing = DB::table('listener_payment')
+            ->where('registration_id', $registration->registration_id)
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Payment has already been recorded.');
+        }
+
+        // Get fee amount
+        $fee = DB::table('conference_fees')
+            ->where('conference_id', $conference_id)
+            ->where('name', $registration->registration_category)
+            ->first();
+
+        $amount = $fee ? $fee->amount : 0;
+
+        DB::table('listener_payment')->insert([
+            'name' => $registration->registration_category,
+            'amount' => $amount,
+            'payment_status' => 'Paid',
+            'registration_id' => $registration->registration_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('participant.registration.show', $conference_id)
+            ->with('success', 'Registration fee payment recorded successfully.');
+    }
 }

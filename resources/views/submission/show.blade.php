@@ -618,13 +618,84 @@
                             </div>
                             <div>
                                 @if($presenterAssignment->presenter_status === 'Confirmed')
-                                    <form method="POST" action="{{ route('presenter.pay', $paper->paper_id) }}">
-                                        @csrf
-                                        <button type="submit" class="btn-primary"
-                                            onclick="return confirm('Confirm presenter fee payment?');">
-                                            Pay Fee Now
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn-primary" id="presenterPayBtn"
+                                        onclick="document.getElementById('presenterPaymentForm').style.display='block'; this.style.display='none';">
+                                        Pay Fee Now
+                                    </button>
+                                    <div id="presenterPaymentForm" style="display:none; margin-top: 20px;">
+                                        <form method="POST" action="{{ route('presenter.pay', $paper->paper_id) }}">
+                                            @csrf
+                                            <div
+                                                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px; padding: 24px; margin-bottom: 20px; color: #fff; position: relative; overflow: hidden;">
+                                                <div
+                                                    style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.05);">
+                                                </div>
+                                                <div
+                                                    style="position: absolute; bottom: -40px; left: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.03);">
+                                                </div>
+                                                <div
+                                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                                                    <span
+                                                        style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7;">Credit
+                                                        / Debit Card</span>
+                                                    <div style="display: flex; gap: 8px;">
+                                                        <div
+                                                            style="width: 36px; height: 24px; background: #eb001b; border-radius: 4px; position: relative;">
+                                                            <div
+                                                                style="width: 36px; height: 24px; background: #f79e1b; border-radius: 4px; position: absolute; left: 12px; opacity: 0.8;">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-bottom: 20px;">
+                                                    <input type="text" placeholder="1234  5678  9012  3456" maxlength="19"
+                                                        style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 14px 16px; color: #fff; font-size: 1.1rem; letter-spacing: 3px; font-family: 'Courier New', monospace; outline: none;"
+                                                        oninput="this.value=this.value.replace(/[^\d]/g,'').replace(/(.{4})/g,'$1 ').trim()"
+                                                        required>
+                                                </div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                                    <div>
+                                                        <label
+                                                            style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; display: block; margin-bottom: 6px;">Expiry
+                                                            Date</label>
+                                                        <input type="text" placeholder="MM / YY" maxlength="7"
+                                                            style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 12px 14px; color: #fff; font-size: 0.95rem; letter-spacing: 2px; outline: none;"
+                                                            oninput="let v=this.value.replace(/[^\d]/g,''); if(v.length>=2) v=v.slice(0,2)+' / '+v.slice(2); this.value=v;"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; display: block; margin-bottom: 6px;">CVV</label>
+                                                        <input type="password" placeholder="•••" maxlength="4"
+                                                            style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 12px 14px; color: #fff; font-size: 0.95rem; letter-spacing: 4px; outline: none;"
+                                                            required>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; display: block; margin-bottom: 6px;">Cardholder
+                                                        Name</label>
+                                                    <input type="text" placeholder="JOHN DOE"
+                                                        style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 12px 14px; color: #fff; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; outline: none;"
+                                                        required>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 12px;">
+                                                <button type="button"
+                                                    style="flex:1; padding: 14px; border-radius: 12px; border: 1px solid #ddd; background: #fff; color: #666; font-weight: 600; cursor: pointer; font-size: 0.95rem;"
+                                                    onclick="document.getElementById('presenterPaymentForm').style.display='none'; document.getElementById('presenterPayBtn').style.display='inline-block';">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit"
+                                                    style="flex:2; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #FF5722, #e64a19); color: #fff; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: transform 0.2s;"
+                                                    onmouseover="this.style.transform='translateY(-1px)'"
+                                                    onmouseout="this.style.transform='none'"
+                                                    onclick="return confirm('Confirm payment of {{ $presenterFee }}?');">
+                                                    Pay {{ $presenterFee }}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 @elseif($presenterAssignment->presenter_status === 'Paid')
                                     <div style="color: #2e7d32; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                                         <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">

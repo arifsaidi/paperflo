@@ -152,6 +152,11 @@ Route::middleware(['session.auth'])->group(function () {
         [ConferenceRegistrationController::class, 'show']
     )->name('participant.registration.show');
 
+    Route::post(
+        '/conferences/{conference_id}/pay-listener',
+        [ConferenceRegistrationController::class, 'payListener']
+    )->name('listener.pay');
+
 
 
     // ===== Notifications =====

@@ -662,13 +662,16 @@ class SubmissionController extends Controller
             ->where('email', $author->author_email)
             ->first();
 
+        // Auto-confirm if the corresponding author selected themselves as presenter
+        $isCorrespondingAuthor = $participant && $participant->participant_id == $participantId;
+
         DB::table('presenter_assignment')->updateOrInsert(
             ['paper_id' => $paper_id],
             [
                 'participant_id' => $participant?->participant_id, // nullable
                 'presenter_name' => $author->author_name,
                 'presenter_email' => $author->author_email,
-                'presenter_status' => 'Pending Confirmation',
+                'presenter_status' => $isCorrespondingAuthor ? 'Confirmed' : 'Pending Confirmation',
                 'updated_at' => now(),
                 'created_at' => now(),
             ]

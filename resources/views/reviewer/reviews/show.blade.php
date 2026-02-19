@@ -181,6 +181,19 @@
             </div>
         </div>
 
+        <div class="paper-field">
+            <label class="field-label">Full Paper</label>
+            <div class="field-value">
+                @if(!empty($review->fullpaper_file_path))
+                    <a href="{{ asset('storage/' . $review->fullpaper_file_path) }}" target="_blank" style="color: #2962ff; text-decoration: none;">
+                        Download Full Paper
+                    </a>
+                @else
+                    <span style="color: #999;">Not available</span>
+                @endif
+            </div>
+        </div>
+
         <form method="POST" action="{{ route('reviewer.reviews.submit', $review->review_id) }}" enctype="multipart/form-data">
             @csrf
 

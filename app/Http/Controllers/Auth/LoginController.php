@@ -51,7 +51,8 @@ class LoginController extends Controller
 
     public function logout()
     {
-        session()->flush();
+        request()->session()->invalidate();      // destroys session record in store
+        request()->session()->regenerateToken(); // issues a new CSRF token
         return redirect()->route('login.form')->with('success', 'Logged out.');
     }
 
@@ -73,6 +74,7 @@ class LoginController extends Controller
             'user_type' => $userType,
             'user_id' => $userId,
         ]);
+        request()->session()->regenerate(); // new session ID — prevents session fixation
 
         if ($userType === 'super_admin') {
             return redirect()->route('conference.request.index')->with('success', "Logged in as Super Admin.");

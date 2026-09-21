@@ -42,7 +42,7 @@ Route::post('/register', [ParticipantAuthController::class, 'register'])
 // Auth routes
 Route::get('/login', [LoginController::class, 'show'])->name('login.form');
 Route::get('/committee/login', [LoginController::class, 'showCommitteeLogin'])->name('committee.login');
-Route::post('/login', [LoginController::class, 'login'])->name('login.do');
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1')->name('login.do');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ===== Super Admin: Conference Request Management =====

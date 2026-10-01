@@ -45,13 +45,7 @@ Route::get('/committee/login', [LoginController::class, 'showCommitteeLogin'])->
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1')->name('login.do');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// ===== Super Admin: Conference Request Management =====
-Route::middleware(['session.auth'])->group(function () {
-    Route::get('/admin/conference-requests', [ConferenceRequestController::class, 'index'])->name('conference.request.index');
-    Route::get('/admin/conference-requests/{id}', [ConferenceRequestController::class, 'show'])->name('conference.request.show');
-    Route::post('/admin/conference-requests/{id}/approve', [ConferenceRequestController::class, 'approve'])->name('conference.request.approve');
-    Route::post('/admin/conference-requests/{id}/reject', [ConferenceRequestController::class, 'reject'])->name('conference.request.reject');
-});
+
 
 // ===== Public: Conference Request Submission =====
 Route::get('/conference-request', [ConferenceRequestController::class, 'create'])->name('conference.request.create');

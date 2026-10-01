@@ -78,6 +78,7 @@ class UserSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
             [
+                'user_role_id' => 3,
                 'user_type' => 'conference_admin',
                 'user_id' => 3,
                 'role_id' => 3, // CONFERENCE_ADMIN (or 2 for manager)

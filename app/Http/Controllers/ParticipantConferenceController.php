@@ -2,57 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Services\ConferenceService;
 
 class ParticipantConferenceController extends Controller
 {
+    public function __construct(
+        protected ConferenceService $conferenceService
+    ) {}
+
     public function index()
     {
-        $conferences = DB::table('conference')
-            ->where('conference_status', 'active')
-            ->orderBy('conference_date', 'asc')
-            ->get();
+        $conferences = $this->conferenceService->getActiveConferences();
 
         return view('participant.conference_list', compact('conferences'));
     }
 
     public function show($conference_id)
     {
-        $conference = DB::table('conference')
-            ->where('conference_id', $conference_id)
-            ->where('conference_status', 'active')
-            ->first();
-
-        if (!$conference) {
-            abort(404, 'Conference not found or not available.');
-        }
-
         $participantId = session('user_id');
 
-        // 🔹 Check if participant already registered
-        $registration = DB::table('conference_registration')
-            ->where('conference_id', $conference_id)
-            ->where('participant_id', $participantId)
-            ->first();
+        $detail = $this->conferenceService->getConferenceDetail($conference_id, $participantId);
 
-        // 🔹 Fetch registration fee categories for this conference
-        $fees = DB::table('conference_fees')
-            ->where('conference_id', $conference_id)
-            ->orderBy('fee_id')
-            ->get();
-
-        // 🔹 Fetch tracks
-        $tracks = DB::table('track')
-            ->where('conference_id', $conference_id)
-            ->get();
-
-        // 🔹 Fetch deadlines
-        $deadlines = DB::table('deadline')
-            ->where('conference_id', $conference_id)
-            ->first();
-
-        return view('participant.conference_detail', compact('conference', 'registration', 'fees', 'tracks', 'deadlines'));
+        return view('participant.conference_detail', [
+            'conference' => $detail['conference'],
+            'registration' => $detail['registration'],
+            'fees' => $detail['fees'],
+            'tracks' => $detail['tracks'],
+            'deadlines' => $detail['deadlines'],
+        ]);
     }
-
-
 }

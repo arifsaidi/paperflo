@@ -2,49 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ConferenceDeadlineService;
+use App\Services\ConferenceService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ConferenceDeadlineController extends Controller
 {
+    public function __construct(
+        protected ConferenceService $conferenceService,
+        protected ConferenceDeadlineService $deadlineService
+    ) {}
+
     public function index($conference_id)
     {
-        $conference = DB::table('conference')
-            ->where('conference_id', $conference_id)
-            ->first();
-
-        if (!$conference) {
-            abort(404);
-        }
-
-        $deadline = DB::table('deadline')
-            ->where('conference_id', $conference_id)
-            ->first();
-
-        // Initialize if not exists
-        if (!$deadline) {
-            $defaultDate = now()->addMonths(3)->format('Y-m-d H:i:s');
-            $deadlineId = DB::table('deadline')->insertGetId([
-                'conference_id' => $conference_id,
-                'abstract_deadline' => $defaultDate,
-                'fullpaper_deadline' => $defaultDate,
-                'cameraready_paper_deadline' => $defaultDate,
-                'participant_registration_deadline' => $defaultDate,
-                'review_deadline' => $defaultDate,
-                'listener_payment_deadline' => $defaultDate,
-                'presenter_payment_deadline' => $defaultDate,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $deadline = DB::table('deadline')->where('deadline_id', $deadlineId)->first();
-        }
+        $conference = $this->conferenceService->findConferenceOrFail($conference_id);
+        $deadline = $this->deadlineService->getOrCreateDeadlines($conference_id);
 
         return view('conference.deadlines.index', compact('conference', 'deadline'));
     }
 
     public function update(Request $request, $conference_id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'abstract_deadline' => 'required|date',
             'fullpaper_deadline' => 'required|date',
             'cameraready_paper_deadline' => 'required|date',
@@ -54,18 +33,7 @@ class ConferenceDeadlineController extends Controller
             'presenter_payment_deadline' => 'required|date',
         ]);
 
-        DB::table('deadline')
-            ->where('conference_id', $conference_id)
-            ->update([
-                'abstract_deadline' => $request->abstract_deadline,
-                'fullpaper_deadline' => $request->fullpaper_deadline,
-                'cameraready_paper_deadline' => $request->cameraready_paper_deadline,
-                'participant_registration_deadline' => $request->participant_registration_deadline,
-                'review_deadline' => $request->review_deadline,
-                'listener_payment_deadline' => $request->listener_payment_deadline,
-                'presenter_payment_deadline' => $request->presenter_payment_deadline,
-                'updated_at' => now(),
-            ]);
+        $this->deadlineService->updateDeadlines($conference_id, $validated);
 
         return back()->with('success', 'Deadlines updated successfully.');
     }

@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             RbacSeeder::class,
             UserSeeder::class,
             ConferenceSeeder::class,
+            ReviewerSeeder::class,
+            ConferenceReviewerAssignmentSeeder::class,
             ConferenceRequestSeeder::class,
         ]);
     }

@@ -2,25 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ConferenceService;
+use App\Services\ConferenceTrackService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ConferenceTrackController extends Controller
 {
+    public function __construct(
+        protected ConferenceService $conferenceService,
+        protected ConferenceTrackService $trackService
+    ) {}
+
     public function index($conference_id)
     {
-        $conference = DB::table('conference')
-            ->where('conference_id', $conference_id)
-            ->first();
-
-        if (!$conference) {
-            abort(404);
-        }
-
-        $tracks = DB::table('track')
-            ->where('conference_id', $conference_id)
-            ->orderBy('track_id')
-            ->get();
+        $conference = $this->conferenceService->findConferenceOrFail($conference_id);
+        $tracks = $this->trackService->getTracks($conference_id);
 
         return view('conference.tracks.index', compact('conference', 'tracks'));
     }
@@ -31,41 +27,19 @@ class ConferenceTrackController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        DB::table('track')->insert([
-            'conference_id' => $conference_id,
-            'name' => $request->name,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->trackService->addTrack($conference_id, $request->name);
 
         return back()->with('success', 'Track added successfully.');
     }
 
     public function destroy($conference_id, $track_id)
     {
-        // Safety check
-        $track = DB::table('track')
-            ->where('conference_id', $conference_id)
-            ->where('track_id', $track_id)
-            ->first();
+        $result = $this->trackService->deleteTrack($conference_id, $track_id);
 
-        if (!$track) {
-            abort(404);
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
         }
 
-        // Check if track is used
-        $isUsed = DB::table('paper')
-            ->where('track_id', $track_id)
-            ->exists();
-
-        if ($isUsed) {
-            return back()->with('error', 'Cannot delete track as it is currently being used by papers.');
-        }
-
-        DB::table('track')
-            ->where('track_id', $track_id)
-            ->delete();
-
-        return back()->with('success', 'Track removed successfully.');
+        return back()->with('success', $result['message']);
     }
 }

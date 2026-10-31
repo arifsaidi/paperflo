@@ -2,25 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ConferenceFeeService;
+use App\Services\ConferenceService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ConferenceFeeController extends Controller
 {
+    public function __construct(
+        protected ConferenceService $conferenceService,
+        protected ConferenceFeeService $feeService
+    ) {}
+
     public function index($conference_id)
     {
-        $conference = DB::table('conference')
-            ->where('conference_id', $conference_id)
-            ->first();
-
-        if (!$conference) {
-            abort(404);
-        }
-
-        $fees = DB::table('conference_fees')
-            ->where('conference_id', $conference_id)
-            ->orderBy('fee_id')
-            ->get();
+        $conference = $this->conferenceService->findConferenceOrFail($conference_id);
+        $fees = $this->feeService->getFees($conference_id);
 
         return view('conference.fees.index', compact('conference', 'fees'));
     }
@@ -35,49 +31,19 @@ class ConferenceFeeController extends Controller
             'fees.*.amount' => 'required|numeric|min:0',
         ]);
 
-        // Update existing fees
-        if ($request->has('fees')) {
-            foreach ($request->fees as $id => $feeData) {
-                DB::table('conference_fees')
-                    ->where('fee_id', $id)
-                    ->where('conference_id', $conference_id)
-                    ->update([
-                        'name' => $feeData['name'],
-                        'amount' => $feeData['amount'],
-                        'updated_at' => now(),
-                    ]);
-            }
-        }
-
-        // Add new fee
-        if ($request->filled('new_fee_name') && $request->filled('new_fee_amount')) {
-            DB::table('conference_fees')->insert([
-                'conference_id' => $conference_id,
-                'name' => $request->new_fee_name,
-                'amount' => $request->new_fee_amount,
-                'currency' => 'MYR',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        $this->feeService->syncFees(
+            $conference_id,
+            $request->fees,
+            $request->new_fee_name,
+            $request->new_fee_amount ? (float) $request->new_fee_amount : null
+        );
 
         return back()->with('success', 'Fees updated successfully.');
     }
 
     public function destroy($conference_id, $fee_id)
     {
-        $fee = DB::table('conference_fees')
-            ->where('conference_id', $conference_id)
-            ->where('fee_id', $fee_id)
-            ->first();
-
-        if (!$fee) {
-            abort(404);
-        }
-
-        DB::table('conference_fees')
-            ->where('fee_id', $fee_id)
-            ->delete();
+        $this->feeService->deleteFee($conference_id, $fee_id);
 
         return back()->with('success', 'Fee category removed successfully.');
     }

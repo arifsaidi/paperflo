@@ -13,7 +13,7 @@
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +41,44 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function createTestConference(array $attributes = []): \App\Models\Conference
 {
-    // ..
+    static $cCount = 0;
+    $cCount++;
+    return \App\Models\Conference::create(array_merge([
+        'name' => 'Test Conference ' . $cCount,
+        'conference_email' => "conf{$cCount}_" . uniqid() . '@conf.com',
+        'conference_phone' => '123456789',
+        'secretariat_address' => 'Secretariat Address',
+        'conference_date' => now()->addMonths(6),
+        'conference_status' => 'draft',
+    ], $attributes));
+}
+
+function createTestParticipant(array $attributes = []): int
+{
+    static $pCount = 0;
+    $pCount++;
+    return \Illuminate\Support\Facades\DB::table('participant')->insertGetId(array_merge([
+        'name' => 'Test Participant ' . $pCount,
+        'email' => "participant{$pCount}_" . uniqid() . '@test.com',
+        'password' => \Illuminate\Support\Facades\Hash::make('password'),
+        'phone_num' => '1234567890',
+        'registration_date' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ], $attributes));
+}
+
+function createTestSuperAdmin(array $attributes = []): int
+{
+    static $sCount = 0;
+    $sCount++;
+    return \Illuminate\Support\Facades\DB::table('super_admin')->insertGetId(array_merge([
+        'name' => 'Super Admin ' . $sCount,
+        'email' => "superadmin{$sCount}_" . uniqid() . '@test.com',
+        'password' => \Illuminate\Support\Facades\Hash::make('password'),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ], $attributes));
 }

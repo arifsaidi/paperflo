@@ -77,6 +77,11 @@ Route::middleware(['session.auth'])->group(function () {
             [ConferenceRequestController::class, 'index']
         )->name('conference.request.index');
 
+        Route::get(
+            '/superadmin/conference-requests/{id}',
+            [ConferenceRequestController::class, 'show']
+        )->name('conference.request.show');
+
         Route::post(
             '/superadmin/conference-requests/{id}/approve',
             [ConferenceRequestController::class, 'approve']

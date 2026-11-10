@@ -90,6 +90,23 @@ it('guests cannot view the conference request list', function () {
     $response->assertStatus(302); // redirect to login
 });
 
+// --- Super Admin: Show Request Detail ---
+
+it('super admin can view a conference request detail', function () {
+    $session = superAdminSession();
+    $id = insertPendingRequest();
+
+    $response = $this->withSession($session)->get("/superadmin/conference-requests/{$id}");
+    $response->assertStatus(200);
+});
+
+it('returns 404 for non-existent conference request detail', function () {
+    $session = superAdminSession();
+
+    $response = $this->withSession($session)->get('/superadmin/conference-requests/99999');
+    $response->assertStatus(404);
+});
+
 // --- Super Admin: Approve Request ---
 
 it('super admin can approve a pending conference request', function () {
